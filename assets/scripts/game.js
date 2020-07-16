@@ -12,6 +12,7 @@ cc.Class({
 		blockNode: cc.Node,
 		baseNodeArr: [cc.Node],
 		wallNodeArr: [cc.Node],
+		scoreLabel: cc.Label,
 	},
 
 	// LIFE-CYCLE CALLBACKS: 
@@ -19,11 +20,12 @@ cc.Class({
 	onLoad() {
 		this.node.on('touchstart', this.grow, this);
 		this.node.on('touchend', this.stop, this);
-		this.init()
+		this.init();
 	},
 	//初始化
 	init() {
-		this.gameState = 'idle'
+		this.score = 0;
+		this.goLack();
 	},
 	// 注销玩家输入事件
 	onDestroy() {
@@ -77,19 +79,64 @@ cc.Class({
 		this.blockNode.runAction(cc.sequence(
 			cc.moveTo(0.7, cc.v2(0, desY)).easing(cc.easeBounceOut()),
 			cc.callFunc(() => {
-				cc.log("碰撞")
+				// cc.log("碰撞");
+				if (success) {
+					this.goLack();
+					this.updataScore(1);
+				} else {
+					this.gameOver();
+				}
+
 			})
 		))
+	},
+	//碰撞后的状态
+	goLack(){
+		this.gameState = 'idle';
+		this.resetWall();
+		this.resetBlock();
+		this.resetColor();
 	},
 	//游戏结束
 	gameOver() {
 		// cc.log("游戏结束")
 		cc.director.loadScene('game') //重新加载游戏
 	},
+	//目标位置
 	placeWall(node, desX) {
-		node.runAction(cc.moveTo(0.5, cc.v2(desX, node.y).easing(cc.cc.easeQuinticActionIn())))
+		node.runAction(cc.moveTo(0.5, cc.v2(desX, node.y)).easing(cc.easeQuinticActionIn()))
 	},
-	resetWall() {},
+	// 设置颜色变化
+	resetColor(){
+		let colors = ['#4cb4e7','#ffc09f','#c7b3e5','#588c7e','#a3a380'];
+		this.node.color = cc.Color.BLACK.fromHEX(colors[parseInt(Math.random()*colors.length)]);
+	},
+	// 设置面阻拦方块
+	resetWall() {
+		//设置随机下面阻拦方块的边距距离s
+		let baseGap = 100 + Math.random() * 100;
+		let wallGap = baseGap + Math.random() * 80 + 30;
+		this.placeWall(this.baseNodeArr[0], -baseGap / 2);
+		this.placeWall(this.baseNodeArr[1], baseGap / 2);
+		this.placeWall(this.wallNodeArr[0], -wallGap / 2);
+		this.placeWall(this.wallNodeArr[1], wallGap / 2);
+	}, 
+	// 设置小方块
+	resetBlock() {
+		this.blockNode.runAction(cc.sequence(
+			cc.spawn(
+				cc.rotateTo(0.5, -45),
+				cc.moveTo(0.7, cc.v2(0, 400)),
+				cc.scaleTo(0.5, 1)
+			),
+			cc.callFunc(() => {})
+		))
+	},
+	//更新分数
+	updataScore(incr) {
+		this.score += incr;
+		this.scoreLabel.string = this.score;
+	},
 	start() {
 
 	},
