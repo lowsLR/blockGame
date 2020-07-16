@@ -22,8 +22,8 @@ cc.Class({
 		this.init()
 	},
 	//初始化
-	init(){
-		
+	init() {
+		this.gameState = 'idle'
 	},
 	// 注销玩家输入事件
 	onDestroy() {
@@ -32,6 +32,8 @@ cc.Class({
 	},
 	// 鼠标点击事件 
 	grow() {
+		if (this.gameState != 'idle') return;
+		this.gameState = 'grow';
 		let seq = cc.sequence(
 			cc.scaleTo(1, 4),
 			cc.callFunc(() => {})
@@ -40,6 +42,8 @@ cc.Class({
 	},
 	// 鼠标松开事件 
 	stop() {
+		if (this.gameState != 'grow') return;
+		this.gameState = 'rota';
 		this.blockNode.stopAction(this.growAction);
 		let rota = cc.sequence(
 			cc.rotateTo(0.15, 0),
@@ -80,8 +84,12 @@ cc.Class({
 	//游戏结束
 	gameOver() {
 		// cc.log("游戏结束")
-		cc.director.loadScene('game')//重新加载游戏
+		cc.director.loadScene('game') //重新加载游戏
 	},
+	placeWall(node, desX) {
+		node.runAction(cc.moveTo(0.5, cc.v2(desX, node.y).easing(cc.cc.easeQuinticActionIn())))
+	},
+	resetWall() {},
 	start() {
 
 	},
