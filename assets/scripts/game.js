@@ -13,6 +13,7 @@ cc.Class({
 		baseNodeArr: [cc.Node],
 		wallNodeArr: [cc.Node],
 		scoreLabel: cc.Label,
+		tarLabel: cc.Label
 	},
 
 	// LIFE-CYCLE CALLBACKS: 
@@ -23,8 +24,10 @@ cc.Class({
 		this.init();
 	},
 	//初始化
-	init() {
-		this.score = 0;
+	init(level = 1,score=0) {
+		this.level = level;
+		this.tar = this.level;
+		this.score = score;
 		this.goLack();
 	},
 	// 注销玩家输入事件
@@ -90,13 +93,6 @@ cc.Class({
 			})
 		))
 	},
-	//碰撞后的状态
-	goLack(){
-		this.gameState = 'idle';
-		this.resetWall();
-		this.resetBlock();
-		this.resetColor();
-	},
 	//游戏结束
 	gameOver() {
 		// cc.log("游戏结束")
@@ -107,20 +103,20 @@ cc.Class({
 		node.runAction(cc.moveTo(0.5, cc.v2(desX, node.y)).easing(cc.easeQuinticActionIn()))
 	},
 	// 设置颜色变化
-	resetColor(){
-		let colors = ['#4cb4e7','#ffc09f','#c7b3e5','#588c7e','#a3a380'];
-		this.node.color = cc.Color.BLACK.fromHEX(colors[parseInt(Math.random()*colors.length)]);
+	resetColor() {
+		let colors = ['#4cb4e7', '#ffc09f', '#c7b3e5', '#588c7e', '#a3a380'];
+		this.node.color = cc.Color.BLACK.fromHEX(colors[parseInt(Math.random() * colors.length)]);
 	},
 	// 设置面阻拦方块
 	resetWall() {
-		//设置随机下面阻拦方块的边距距离s
+		//设置随机下面阻拦方块的边距距离
 		let baseGap = 100 + Math.random() * 100;
 		let wallGap = baseGap + Math.random() * 80 + 30;
 		this.placeWall(this.baseNodeArr[0], -baseGap / 2);
 		this.placeWall(this.baseNodeArr[1], baseGap / 2);
 		this.placeWall(this.wallNodeArr[0], -wallGap / 2);
 		this.placeWall(this.wallNodeArr[1], wallGap / 2);
-	}, 
+	},
 	// 设置小方块
 	resetBlock() {
 		this.blockNode.runAction(cc.sequence(
@@ -132,10 +128,28 @@ cc.Class({
 			cc.callFunc(() => {})
 		))
 	},
+	//碰撞后的状态
+	goLack() {
+		if (this.tar == 0) {
+			let level = this.level + 1;
+			let score = this.score;
+			this.init(level,score);
+			this.scoreLabel.string = `Score:${this.score},Level:${this.level}`;
+			return;
+		}
+		this.tarLabel.string = this.tar;
+		this.gameState = 'idle';
+		this.resetWall();
+		this.resetBlock();
+		this.resetColor();
+	},
 	//更新分数
 	updataScore(incr) {
 		this.score += incr;
-		this.scoreLabel.string = this.score;
+		// this.scoreLabel.string = this.score;
+		this.scoreLabel.string = `Score:${this.score},Level:${this.level}`;
+		this.tar -= incr;
+
 	},
 	start() {
 
